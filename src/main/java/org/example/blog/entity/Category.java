@@ -16,7 +16,7 @@ import java.util.Set;
 @Entity
 @Table(name = "categories")
 public class Category extends BaseEntity {
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false, length = 50)
     private String name;
 
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
