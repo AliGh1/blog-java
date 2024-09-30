@@ -20,13 +20,13 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         }
 
-        CustomValidationErrorsResponse response = new CustomValidationErrorsResponse(HttpStatus.BAD_REQUEST.value(), errors);
+        var response = new CustomValidationErrorsResponse(HttpStatus.BAD_REQUEST.value(), errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<CustomErrorResponse> handleResponseStatusExceptions(ResponseStatusException ex) {
-        CustomErrorResponse response = new CustomErrorResponse(ex.getStatusCode().value(), ex.getMessage());
+        var response = new CustomErrorResponse(ex.getStatusCode().value(), ex.getMessage());
 
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
