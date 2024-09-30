@@ -14,26 +14,26 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<CustomValidationErrorsResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<CustomErrors> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
         }
 
-        var response = new CustomValidationErrorsResponse(HttpStatus.BAD_REQUEST.value(), errors);
+        var response = new CustomErrors(HttpStatus.BAD_REQUEST.value(), errors);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<CustomErrorResponse> handleResponseStatusExceptions(ResponseStatusException ex) {
-        var response = new CustomErrorResponse(ex.getStatusCode().value(), ex.getMessage());
+    public ResponseEntity<CustomErrors> handleResponseStatusExceptions(ResponseStatusException ex) {
+        var response = new CustomErrors(ex.getStatusCode().value(), ex.getMessage());
 
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<CustomErrorResponse> handleResponseStatusExceptions(IllegalArgumentException ex) {
-        var response = new CustomErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+    public ResponseEntity<CustomErrors> handleResponseStatusExceptions(IllegalArgumentException ex) {
+        var response = new CustomErrors(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }
