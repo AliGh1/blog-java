@@ -30,4 +30,10 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CustomErrorResponse> handleResponseStatusExceptions(IllegalArgumentException ex) {
+        var response = new CustomErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

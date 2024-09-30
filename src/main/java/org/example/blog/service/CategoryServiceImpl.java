@@ -2,69 +2,76 @@ package org.example.blog.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.blog.dto.CategoryDTO;
+import org.example.blog.dto.CategoryMapper;
 import org.example.blog.entity.Category;
 import org.example.blog.repository.CategoryRepository;
-import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
-    private final ModelMapper modelMapper;
+    private final CategoryMapper mapper;
 
-    private Category convertToEntity(CategoryDTO dto) {
-        return modelMapper.map(dto, Category.class);
-    }
 
-    private CategoryDTO convertToDto(Category category) {
-        return modelMapper.map(category, CategoryDTO.class);
-    }
-
-    public List<CategoryDTO> convertToDto(List<Category> categories) {
-        return categories.stream()
-                .map(category -> modelMapper.map(category, CategoryDTO.class))
-                .collect(Collectors.toList());
-    }
-
-    public List<Category> convertToEntity(List<CategoryDTO> dtos) {
-        return dtos.stream()
-                .map(dto -> modelMapper.map(dto, Category.class))
-                .collect(Collectors.toList());
+    @Override
+    public CategoryDTO saveCategory(CategoryDTO categoryDTO) {
+        validationUniqueName(categoryDTO.getName());
+        var category = mapper.toCategory(categoryDTO);
+        var categorySaved = categoryRepository.save(category);
+        return mapper.toCategoryDto(categorySaved);
     }
 
     @Override
-    public CategoryDTO saveCategory(CategoryDTO category) {
-        return convertToDto(categoryRepository.save(convertToEntity(category)));
-    }
-
-    @Override
-    public List<CategoryDTO> getAllCategories() {
-        return convertToDto(categoryRepository.findAll());
+    public List<CategoryDTO> getAllCategories(int size, int page) {
+        if (size <= 0 || page < 0) {
+            throw new IllegalArgumentException("Invalid pagination parameters");
+        }
+        PageRequest pageable = PageRequest.of(size, page);
+        return categoryRepository.findAll(pageable).stream().map(mapper::toCategoryDto).toList();
     }
 
     @Override
     public CategoryDTO getCategoryById(long id) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return convertToDto(category);
+        return mapper.toCategoryDto(category);
     }
 
     @Override
-    public CategoryDTO updateCategory(CategoryDTO category, long id) {
-        Category existingCategory = categoryRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        existingCategory.setName(category.getName());
-        categoryRepository.save(existingCategory);
-        return convertToDto(existingCategory);
+    public CategoryDTO updateCategory(CategoryDTO categoryDTO, long id) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (existingCategory.getName().equals(categoryDTO.getName())) {
+            return categoryDTO;
+        }
+        validationUniqueName(categoryDTO.getName());
+        existingCategory.setName(categoryDTO.getName());
+        var categoryUpdated = categoryRepository.save(existingCategory);
+        return mapper.toCategoryDto(categoryUpdated);
     }
 
     @Override
     public void deleteCategory(long id) {
-        Category existingCategory = categoryRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        categoryRepository.deleteById(id);
+        categoryRepository.findById(id).ifPresentOrElse(category -> {
+            category.setDeleted(LocalDateTime.now());
+            categoryRepository.save(category);
+        }, () -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        });
     }
+
+    private void validationUniqueName(String name) {
+        boolean exists = categoryRepository.existsByName(name);
+        if (exists)
+            throw new IllegalArgumentException("Name must be unique");
+
+    }
+
+
 }

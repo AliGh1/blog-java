@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.blog.entity.base.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
@@ -14,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@SQLRestriction("deleted is null")
 @Table(name = "categories")
 public class Category extends BaseEntity {
     @Column(unique = true, nullable = false, length = 50)
@@ -21,4 +24,6 @@ public class Category extends BaseEntity {
 
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     private Set<Post> posts;
+
+    private LocalDateTime deleted;
 }
