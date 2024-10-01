@@ -30,4 +30,11 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
+
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<CustomValidationErrorResponse> handleResponseStatusExceptions(CustomValidationException ex) {
+        CustomValidationErrorResponse response = new CustomValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getErrors());
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }
