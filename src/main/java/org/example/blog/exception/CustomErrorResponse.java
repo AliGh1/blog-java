@@ -2,19 +2,12 @@ package org.example.blog.exception;
 
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Getter
-public class CustomErrorResponse {
-    private final int status;
+public class CustomErrorResponse extends CustomError {
     private final String message;
-    private final String timestamp;
 
-
-    public CustomErrorResponse(int statusCode, String message) {
-        this.status = statusCode;
+    public CustomErrorResponse(int status, String message) {
+        super(status);
         this.message = message;
-        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
     }
 }
