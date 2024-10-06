@@ -29,4 +29,6 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginRequestDTO request) {
         return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
     }
+
+    // TODO add logout with blacklist
 }

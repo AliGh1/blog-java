@@ -20,8 +20,8 @@ public class JwtService {
 
     public JwtService(@Value("${security.jwt.certs.public}") String publicKeyPath,
                       @Value("${security.jwt.certs.private}") String privateKeyPath) throws Exception {
-        this.publicKey = JwtTokenConvertor.loadPublicKey(publicKeyPath);
-        this.privateKey = JwtTokenConvertor.loadPrivateKey(privateKeyPath);
+        this.publicKey = KeyUtils.loadPublicKey(publicKeyPath);
+        this.privateKey = KeyUtils.loadPrivateKey(privateKeyPath);
     }
 
     @Value("${security.jwt.expiration-time}")

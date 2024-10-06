@@ -2,6 +2,7 @@ package org.example.blog.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,5 +37,12 @@ public class GlobalExceptionHandler {
         CustomValidationErrorResponse response = new CustomValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getErrors());
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<CustomErrorResponse> handleResponseStatusExceptions(AuthenticationException ex) {
+        CustomErrorResponse response = new CustomErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 }

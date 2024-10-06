@@ -12,7 +12,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Service
-public class JwtTokenConvertor {
+public class KeyUtils {
     public static PublicKey loadPublicKey(String filename) throws Exception {
         String key = new String(Files.readAllBytes(Paths.get(filename)))
                 .replaceAll("-----BEGIN PUBLIC KEY-----", "")
