@@ -5,10 +5,13 @@ import org.example.blog.dto.AuthResponseDTO;
 import org.example.blog.dto.LoginRequestDTO;
 import org.example.blog.dto.RegisterRequestDTO;
 import org.example.blog.dto.UserMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,28 @@ public class AuthServiceImpl implements AuthService {
                 generateAccessToken(request.getEmail()),
                 generateRefreshToken(request.getEmail())
         );
+    }
+
+    @Override
+    public AuthResponseDTO refreshToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            final String refreshToken = authHeader.substring(7);
+            final String userEmail = jwtService.extractUsername(refreshToken);
+            final String tokenType = jwtService.extractTokenType(refreshToken);
+
+            if ("refresh".equals(tokenType) && userEmail != null) {
+                UserDetails userDetails = userService.loadUserByUsername(userEmail);
+
+                if (jwtService.isTokenValid(refreshToken, userDetails)) {
+                    return new AuthResponseDTO(
+                            generateAccessToken(userEmail),
+                            refreshToken
+                    );
+                }
+            }
+        }
+
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
 
     private String generateAccessToken(String email) {

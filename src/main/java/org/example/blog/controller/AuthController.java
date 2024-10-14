@@ -9,10 +9,7 @@ import org.example.blog.dto.RegisterRequestDTO;
 import org.example.blog.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/auth")
@@ -28,6 +25,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginRequestDTO request) {
         return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponseDTO> refreshAccessToken(@RequestHeader("Authorization") String authHeader) {
+        return new ResponseEntity<>(authService.refreshToken(authHeader), HttpStatus.OK);
     }
 
     // TODO add logout with blacklist
