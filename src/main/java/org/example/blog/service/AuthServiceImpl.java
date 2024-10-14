@@ -22,17 +22,27 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO register(RegisterRequestDTO request) {
         userService.saveUser(userMapper.toEntity(request));
 
-        return new AuthResponseDTO(generateToken(request.getEmail()));
+        return new AuthResponseDTO(
+                generateAccessToken(request.getEmail()),
+                generateRefreshToken(request.getEmail())
+        );
     }
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        return new AuthResponseDTO(generateToken(request.getEmail()));
+        return new AuthResponseDTO(
+                generateAccessToken(request.getEmail()),
+                generateRefreshToken(request.getEmail())
+        );
     }
 
-    private String generateToken(String email) {
-        return jwtService.generateToken(userService.loadUserByUsername(email));
+    private String generateAccessToken(String email) {
+        return jwtService.generateAccessToken(userService.loadUserByUsername(email));
+    }
+
+    private String generateRefreshToken(String email) {
+        return jwtService.generateRefreshToken(userService.loadUserByUsername(email));
     }
 }

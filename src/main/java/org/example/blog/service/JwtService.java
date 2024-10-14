@@ -24,11 +24,18 @@ public class JwtService {
         this.privateKey = KeyUtils.loadPrivateKey(privateKeyPath);
     }
 
-    @Value("${security.jwt.expiration-time}")
-    private long jwtExpiration;
+    @Value("${security.jwt.access-expiration-time}")
+    private long accessJwtExpiration;
+
+    @Value("${security.jwt.refresh-expiration-time}")
+    private long refreshJwtExpiration;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
     private Date extractExpiration(String token) {
@@ -58,16 +65,26 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateAccessToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "access");
+        return generateAccessToken(claims, userDetails);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        extraClaims.put("type", "access");
+        return buildToken(extraClaims, userDetails, accessJwtExpiration);
     }
 
-    public long getExpirationTime() {
-        return jwtExpiration;
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        return generateRefreshToken(claims, userDetails);
+    }
+
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        extraClaims.put("type", "refresh");
+        return buildToken(extraClaims, userDetails, refreshJwtExpiration);
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
