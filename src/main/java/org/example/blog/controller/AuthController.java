@@ -32,5 +32,9 @@ public class AuthController {
         return new ResponseEntity<>(authService.refreshToken(authHeader), HttpStatus.OK);
     }
 
-    // TODO add logout with blacklist
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        authService.logout(authHeader);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

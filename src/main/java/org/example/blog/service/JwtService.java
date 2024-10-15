@@ -1,6 +1,7 @@
 package org.example.blog.service;
 
 import io.jsonwebtoken.Jwts;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class JwtService {
     @Value("${security.jwt.access-expiration-time}")
     private long accessJwtExpiration;
 
+    @Getter
     @Value("${security.jwt.refresh-expiration-time}")
     private long refreshJwtExpiration;
 
@@ -38,7 +40,11 @@ public class JwtService {
         return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
-    private Date extractExpiration(String token) {
+    public String extractId(String token) {
+        return extractClaim(token, Claims::getId);
+    }
+
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
@@ -65,32 +71,33 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    public String generateAccessToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails, String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
-        return generateAccessToken(claims, userDetails);
+        return generateAccessToken(claims, userDetails, id);
     }
 
-    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails, String id) {
         extraClaims.put("type", "access");
-        return buildToken(extraClaims, userDetails, accessJwtExpiration);
+        return buildToken(extraClaims, userDetails, accessJwtExpiration, id);
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
+    public String generateRefreshToken(UserDetails userDetails, String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
-        return generateRefreshToken(claims, userDetails);
+        return generateRefreshToken(claims, userDetails, id);
     }
 
-    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails, String id) {
         extraClaims.put("type", "refresh");
-        return buildToken(extraClaims, userDetails, refreshJwtExpiration);
+        return buildToken(extraClaims, userDetails, refreshJwtExpiration, id);
     }
 
-    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration, String id) {
         return Jwts
                 .builder()
                 .claims(extraClaims)
+                .id(id)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
