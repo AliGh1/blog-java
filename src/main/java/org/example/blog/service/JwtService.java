@@ -44,8 +44,13 @@ public class JwtService {
         return extractClaim(token, Claims::getId);
     }
 
-    public Date extractExpiration(String token) {
+    private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    public long calculateTokenRemainingValidity(String token) {
+        Date expirationDate = extractExpiration(token);
+        return expirationDate.getTime() - System.currentTimeMillis();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

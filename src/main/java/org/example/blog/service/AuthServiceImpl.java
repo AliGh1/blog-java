@@ -27,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDTO register(RegisterRequestDTO request) {
         userService.saveUser(userMapper.toEntity(request));
-        String uuid = generateUUID();
+        String uuid = generateTokenId();
         return new AuthResponseDTO(
                 generateAccessToken(request.getEmail(), uuid),
                 generateRefreshToken(request.getEmail(), uuid)
@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        String uuid = generateUUID();
+        String uuid = generateTokenId();
         return new AuthResponseDTO(
                 generateAccessToken(request.getEmail(), uuid),
                 generateRefreshToken(request.getEmail(), uuid)
@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
             final String tokenType = jwtService.extractTokenType(token);
             final String tokenId = jwtService.extractId(token);
             final long tokenExpiration = "refresh".equals(tokenType)
-                    ? jwtService.extractExpiration(token).getTime()
+                    ? jwtService.calculateTokenRemainingValidity(token)
                     : jwtService.getRefreshJwtExpiration();
 
             if (userEmail != null) {
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
         return jwtService.generateRefreshToken(userService.loadUserByUsername(email), id);
     }
 
-    private String generateUUID() {
+    private String generateTokenId() {
         return UUID.randomUUID().toString();
     }
 }
